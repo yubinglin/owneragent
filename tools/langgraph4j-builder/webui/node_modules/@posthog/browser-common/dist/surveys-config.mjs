@@ -1,0 +1,9 @@
+const SURVEYS = '$surveys';
+const SURVEYS_LOADED_AT = '$surveys_loaded_at';
+const SURVEYS_CACHE_TTL_MS = 300000;
+const SURVEYS_REFRESH_BACKOFF_MS = SURVEYS_CACHE_TTL_MS;
+const LOAD_EXT_NOT_FOUND = 'PostHog loadExternalDependency extension not found.';
+const SURVEYS_ACTIVATED = '$surveys_activated';
+const SURVEYS_ACTIVATED_SESSION = '$surveys_activated_session';
+const SURVEYS_ACTIVATED_TIMESTAMPS = '$surveys_activated_timestamps';
+export { LOAD_EXT_NOT_FOUND, SURVEYS, SURVEYS_ACTIVATED, SURVEYS_ACTIVATED_SESSION, SURVEYS_ACTIVATED_TIMESTAMPS, SURVEYS_CACHE_TTL_MS, SURVEYS_LOADED_AT, SURVEYS_REFRESH_BACKOFF_MS };

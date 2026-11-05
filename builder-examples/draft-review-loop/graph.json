@@ -1,0 +1,25 @@
+{
+  "name": "DraftReviewLoop",
+  "nodes": [
+    { "id": "source", "type": "source", "position": { "x": 0, "y": 0 }, "data": { "label": "source" } },
+    { "id": "plan", "type": "custom", "position": { "x": 0, "y": 140 }, "data": { "label": "plan" } },
+    { "id": "draft", "type": "custom", "position": { "x": 0, "y": 280 }, "data": { "label": "draft" } },
+    { "id": "review", "type": "custom", "position": { "x": 0, "y": 420 }, "data": { "label": "review" } },
+    { "id": "revise", "type": "custom", "position": { "x": -220, "y": 560 }, "data": { "label": "revise" } },
+    { "id": "finalize", "type": "custom", "position": { "x": 0, "y": 560 }, "data": { "label": "finalize" } },
+    { "id": "abort", "type": "custom", "position": { "x": 220, "y": 560 }, "data": { "label": "abort" } },
+    { "id": "end", "type": "end", "position": { "x": 0, "y": 720 }, "data": { "label": "end" } }
+  ],
+  "edges": [
+    { "id": "source->plan", "source": "source", "target": "plan", "type": "self-connecting-edge", "markerEnd": { "type": "arrowclosed" } },
+    { "id": "plan->draft", "source": "plan", "target": "draft", "type": "self-connecting-edge", "markerEnd": { "type": "arrowclosed" } },
+    { "id": "draft->review", "source": "draft", "target": "review", "type": "self-connecting-edge", "markerEnd": { "type": "arrowclosed" } },
+    { "id": "review->revise", "source": "review", "target": "revise", "type": "self-connecting-edge", "label": "route", "animated": true, "markerEnd": { "type": "arrowclosed" } },
+    { "id": "review->finalize", "source": "review", "target": "finalize", "type": "self-connecting-edge", "label": "route", "animated": true, "markerEnd": { "type": "arrowclosed" } },
+    { "id": "review->abort", "source": "review", "target": "abort", "type": "self-connecting-edge", "label": "route", "animated": true, "markerEnd": { "type": "arrowclosed" } },
+    { "id": "revise->draft", "source": "revise", "target": "draft", "type": "self-connecting-edge", "markerEnd": { "type": "arrowclosed" } },
+    { "id": "finalize->end", "source": "finalize", "target": "end", "type": "self-connecting-edge", "markerEnd": { "type": "arrowclosed" } },
+    { "id": "abort->end", "source": "abort", "target": "end", "type": "self-connecting-edge", "markerEnd": { "type": "arrowclosed" } }
+  ],
+  "viewport": { "x": 600, "y": 60, "zoom": 1 }
+}

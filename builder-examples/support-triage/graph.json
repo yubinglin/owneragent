@@ -1,0 +1,18 @@
+{
+  "name": "SupportTriage",
+  "nodes": [
+    { "id": "source", "type": "source", "position": { "x": 0, "y": 0 }, "data": { "label": "source" } },
+    { "id": "classify", "type": "custom", "position": { "x": 0, "y": 140 }, "data": { "label": "classify" } },
+    { "id": "auto_reply", "type": "custom", "position": { "x": -180, "y": 320 }, "data": { "label": "auto_reply" } },
+    { "id": "escalate", "type": "custom", "position": { "x": 180, "y": 320 }, "data": { "label": "escalate" } },
+    { "id": "end", "type": "end", "position": { "x": 0, "y": 520 }, "data": { "label": "end" } }
+  ],
+  "edges": [
+    { "id": "source->classify", "source": "source", "target": "classify", "type": "self-connecting-edge", "markerEnd": { "type": "arrowclosed" } },
+    { "id": "classify->auto_reply", "source": "classify", "target": "auto_reply", "type": "self-connecting-edge", "label": "route", "animated": true, "markerEnd": { "type": "arrowclosed" } },
+    { "id": "classify->escalate", "source": "classify", "target": "escalate", "type": "self-connecting-edge", "label": "route", "animated": true, "markerEnd": { "type": "arrowclosed" } },
+    { "id": "auto_reply->end", "source": "auto_reply", "target": "end", "type": "self-connecting-edge", "markerEnd": { "type": "arrowclosed" } },
+    { "id": "escalate->end", "source": "escalate", "target": "end", "type": "self-connecting-edge", "markerEnd": { "type": "arrowclosed" } }
+  ],
+  "viewport": { "x": 600, "y": 100, "zoom": 1 }
+}

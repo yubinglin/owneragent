@@ -1,0 +1,19 @@
+server:
+  port: ${SERVER_PORT:18081}
+
+spring:
+  application:
+    name: owneragent
+  ai:
+    deepseek:
+      # 直接在这里填写你的 DeepSeek API Key；注意不要提交到公开仓库
+      api-key: sk-5279f79d28e947468fe323e5c3e612fd
+      base-url: https://api.deepseek.com
+      chat:
+        model: deepseek-chat
+        temperature: 0.3
+        max-tokens: 2048
+
+logging:
+  level:
+    com.owneragent.agent.react: INFO

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OwnerAgent · Spring AI + LangGraph4j + DeepSeek</title>
+    <style>
+        :root {
+            --bg: #f4f6fb;
+            --card: #ffffff;
+            --ink: #1f2430;
+            --muted: #6b7280;
+            --accent: #2563eb;
+            --accent-soft: #e8efff;
+            --assistant: #eef2f8;
+            --danger: #b42318;
+            --border: #dde3ee;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                         "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background: radial-gradient(circle at top left, #e8efff, var(--bg) 45%);
+            color: var(--ink);
+            display: flex;
+            justify-content: center;
+            padding: 24px 12px;
+        }
+
+        .app {
+            width: min(880px, 100%);
+            height: calc(100vh - 48px);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            box-shadow: 0 18px 50px rgba(31, 41, 55, 0.12);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        header h1 { font-size: 17px; margin: 0; }
+        header .sub { color: var(--muted); font-size: 12px; margin-top: 3px; }
+
+        header .spacer { flex: 1; }
+
+        header button,
+        header a.action {
+            border: 1px solid var(--border);
+            background: #fff;
+            color: var(--ink);
+            border-radius: 10px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        header a.action { text-decoration: none; }
+
+        header button:hover,
+        header a.action:hover { background: var(--accent-soft); border-color: #c7d7ff; }
+
+        #messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .row { display: flex; flex-direction: column; max-width: 86%; }
+        .row.user { align-self: flex-end; align-items: flex-end; }
+        .row.assistant { align-self: flex-start; align-items: flex-start; }
+
+        .bubble {
+            padding: 11px 14px;
+            border-radius: 14px;
+            line-height: 1.6;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .user .bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+        .assistant .bubble { background: var(--assistant); border-bottom-left-radius: 4px; }
+
+        .empty {
+            margin: auto;
+            text-align: center;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .empty h2 { color: var(--ink); font-size: 18px; margin-bottom: 8px; }
+
+        .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+        details.trace {
+            margin-top: 6px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        details.trace summary {
+            cursor: pointer;
+            user-select: none;
+            color: var(--accent);
+        }
+
+        .step {
+            margin-top: 6px;
+            padding: 7px 9px;
+            border-radius: 8px;
+            border: 1px dashed var(--border);
+            background: #fbfcff;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .step b { color: var(--ink); font-family: inherit; }
+
+        .error {
+            color: var(--danger);
+            background: #fff1f0;
+            border: 1px solid #ffd2cf;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+        }
+
+        form {
+            border-top: 1px solid var(--border);
+            padding: 14px;
+            display: flex;
+            gap: 10px;
+            background: #fafbfe;
+        }
+
+        textarea {
+            flex: 1;
+            resize: none;
+            height: 46px;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font: inherit;
+            font-size: 14px;
+            outline: none;
+            background: #fff;
+        }
+
+        textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+        form button {
+            border: none;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 12px;
+            padding: 0 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        form button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .typing { display: inline-flex; gap: 4px; align-items: center; }
+        .typing span {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--muted);
+            animation: blink 1.2s infinite ease-in-out;
+        }
+        .typing span:nth-child(2) { animation-delay: 0.2s; }
+        .typing span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes blink { 0%, 80%, 100% { opacity: 0.25; } 40% { opacity: 1; } }
+    </style>
+</head>
+<body>
+<div class="app">
+    <header>
+        <div>
+            <h1>OwnerAgent</h1>
+            <div class="sub">Spring AI · LangGraph4j · DeepSeek</div>
+        </div>
+        <div class="spacer"></div>
+        <a class="action" href="/studio.html?instance=owneragent" target="_blank" rel="noopener">Studio</a>
+        <a class="action" href="http://localhost:3000" target="_blank" rel="noopener">Builder</a>
+        <button id="reset" type="button">新对话</button>
+    </header>
+
+    <div id="messages">
+        <div class="empty">
+            <h2>开始和 Agent 对话</h2>
+            <div>可以试试：「现在上海几点？」</div>
+            <div>「用 calculate 算一下 (12+8)*3」</div>
+            <div>「查一下团队的工作时间」</div>
+        </div>
+    </div>
+
+    <form id="chat-form">
+        <textarea id="input" placeholder="输入消息，Enter 发送，Shift+Enter 换行" maxlength="4000"></textarea>
+        <button id="send" type="submit">发送</button>
+    </form>
+</div>
+
+<script>
+    const messagesEl = document.getElementById('messages');
+    const formEl = document.getElementById('chat-form');
+    const inputEl = document.getElementById('input');
+    const sendEl = document.getElementById('send');
+    const resetEl = document.getElementById('reset');
+
+    let threadId = localStorage.getItem('owneragent-thread-id') || null;
+    let pending = false;
+
+    function clearMessages() {
+        messagesEl.innerHTML = '';
+    }
+
+    function addRow(role, text) {
+        const empty = messagesEl.querySelector('.empty');
+        if (empty) empty.remove();
+
+        const row = document.createElement('div');
+        row.className = 'row ' + role;
+
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.textContent = text;
+        row.appendChild(bubble);
+        messagesEl.appendChild(row);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+        return row;
+    }
+
+    function addTrace(row, steps) {
+        if (!steps || steps.length === 0) return;
+
+        const details = document.createElement('details');
+        details.className = 'trace';
+        const summary = document.createElement('summary');
+        summary.textContent = '工具调用轨迹（' + steps.length + '）';
+        details.appendChild(summary);
+
+        for (const step of steps) {
+            const div = document.createElement('div');
+            div.className = 'step';
+            const label = step.type === 'tool_call' ? '调用' : '结果';
+            const name = document.createElement('b');
+            name.textContent = step.name || '(unknown)';
+            div.appendChild(document.createTextNode(label + ' '));
+            div.appendChild(name);
+            div.appendChild(document.createTextNode('\n' + (step.detail || '')));
+            details.appendChild(div);
+        }
+        row.appendChild(details);
+    }
+
+    function addError(text) {
+        const div = document.createElement('div');
+        div.className = 'error';
+        div.textContent = text;
+        messagesEl.appendChild(div);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function addTyping() {
+        const row = document.createElement('div');
+        row.className = 'row assistant';
+        row.id = 'typing-row';
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.innerHTML = '<span class="typing"><span></span><span></span><span></span></span>';
+        row.appendChild(bubble);
+        messagesEl.appendChild(row);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function removeTyping() {
+        const row = document.getElementById('typing-row');
+        if (row) row.remove();
+    }
+
+    async function send(message) {
+        if (pending || !message.trim()) return;
+        pending = true;
+        sendEl.disabled = true;
+        addRow('user', message);
+        addTyping();
+
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ threadId: threadId, message: message })
+            });
+
+            removeTyping();
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                addError(data.error || ('请求失败（HTTP ' + response.status + '）'));
+                return;
+            }
+
+            threadId = data.threadId;
+            localStorage.setItem('owneragent-thread-id', threadId);
+            const row = addRow('assistant', data.reply || '（空回复）');
+            addTrace(row, data.steps);
+        } catch (error) {
+            removeTyping();
+            addError('网络错误：' + error.message);
+        } finally {
+            pending = false;
+            sendEl.disabled = false;
+            inputEl.focus();
+        }
+    }
+
+    formEl.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const message = inputEl.value;
+        inputEl.value = '';
+        send(message);
+    });
+
+    inputEl.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            formEl.requestSubmit();
+        }
+    });
+
+    resetEl.addEventListener('click', () => {
+        threadId = null;
+        localStorage.removeItem('owneragent-thread-id');
+        clearMessages();
+        inputEl.focus();
+    });
+
+    inputEl.focus();
+</script>
+</body>
+</html>

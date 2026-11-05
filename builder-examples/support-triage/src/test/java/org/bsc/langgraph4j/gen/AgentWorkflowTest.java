@@ -1,0 +1,71 @@
+package org.bsc.langgraph4j.gen;
+
+import org.bsc.langgraph4j.CompileConfig;
+import org.bsc.langgraph4j.RunnableConfig;
+import org.bsc.langgraph4j.prebuilt.MessagesState;
+import org.junit.jupiter.api.Test;
+
+import java.util.Map;
+
+import static org.bsc.langgraph4j.StateGraph.END;
+import static org.bsc.langgraph4j.action.AsyncEdgeAction.edge_async;
+import static org.bsc.langgraph4j.action.AsyncNodeAction.node_async;
+
+/**
+* This is an automatically generated file.
+*
+* This file was generated using `langgraph4j-gen`.
+*
+* This file provides a placeholder implementation for the corresponding stub.
+*
+* Replace the placeholder implementation with your own logic.
+*/
+public class AgentWorkflowTest {
+
+    @Test
+    public void workflowTest() throws Exception {
+
+        var graph = new AgentWorkflowBuilder<MessagesState<String>>()
+            .classify( node_async(state -> {
+            System.out.println( "classify" );
+            return Map.of();
+            }))
+            .auto_reply( node_async(state -> {
+            System.out.println( "auto_reply" );
+            return Map.of();
+            }))
+            .escalate( node_async(state -> {
+            System.out.println( "escalate" );
+            return Map.of();
+            }))
+                .route( edge_async( state -> {
+                System.out.println( "route" );
+                // Builder 生成的是占位符 `return ;`，必须返回 paths 中的一个。
+                return "auto_reply";
+                }))
+        .build( MessagesState::new, MessagesState.SCHEMA );
+
+
+        var compileConfig = CompileConfig.builder()
+                            // Add persistence
+                            // .checkpointSaver(new MemorySaver())
+                            // add interruptions
+                            // .interruptAfter( ... )  // Before nodes
+                            // .interruptBefore( ) // After nodes
+                            .build();
+
+        var workflow = graph.compile( compileConfig );
+
+        var runnableConfig = RunnableConfig.builder()
+                            // add thread Id (i.e. execution session id )
+                            // valid only if checkpointSaver is enabled (see above)
+                            // .threadId( "my_thread" )
+                            .build();
+
+        var iterator = workflow.stream( Map.of(), runnableConfig );
+
+        for( var out : iterator ) {
+            System.out.println( out );
+        }
+    }
+}

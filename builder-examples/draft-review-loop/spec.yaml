@@ -1,0 +1,30 @@
+# 带循环的草稿评审图：
+#   START → plan → draft → review ──route──┬─ revise → draft（循环）
+#                                            ├─ finalize → END
+#                                            └─ abort → END
+name: DraftReviewLoop
+
+nodes:
+  - name: plan
+  - name: draft
+  - name: review
+  - name: revise
+  - name: finalize
+  - name: abort
+
+edges:
+  - from: __start__
+    to: plan
+  - from: plan
+    to: draft
+  - from: draft
+    to: review
+  - from: review
+    condition: route
+    paths: [revise, finalize, abort]
+  - from: revise
+    to: draft
+  - from: finalize
+    to: __end__
+  - from: abort
+    to: __end__

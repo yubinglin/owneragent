@@ -1,0 +1,19 @@
+# 在 LangGraph4j Builder 画布中设计的“工单分流”图。
+# 这里保存的是 Generate Code 使用的 YAML spec，可据此复现生成结果。
+name: SupportTriage
+
+nodes:
+  - name: classify
+  - name: auto_reply
+  - name: escalate
+
+edges:
+  - from: __start__
+    to: classify
+  - from: classify
+    condition: route
+    paths: [auto_reply, escalate]
+  - from: auto_reply
+    to: __end__
+  - from: escalate
+    to: __end__
